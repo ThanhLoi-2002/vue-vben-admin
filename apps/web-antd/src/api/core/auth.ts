@@ -1,3 +1,5 @@
+import type { IResponse } from '#/type/common';
+
 import { baseRequestClient, requestClient } from '#/api/request';
 
 export namespace AuthApi {
@@ -22,7 +24,7 @@ export namespace AuthApi {
  * 登录
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  return requestClient.post<AuthApi.LoginResult>('/auth/login', data);
+  return requestClient.post<IResponse<AuthApi.LoginResult>>('/auth/login', data, { responseReturn: 'body'});
 }
 
 /**
