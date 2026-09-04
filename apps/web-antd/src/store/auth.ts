@@ -69,6 +69,14 @@ export const useAuthStore = defineStore('auth', () => {
             // đảm bảo không lỗi khi log out xong login lại
             window.location.reload();
         }
+
+        if (message) {
+          notification.success({
+            description: `${$t('authentication.loginSuccessDesc')}`,
+            duration: 3,
+            message: $t('authentication.loginSuccess'),
+          });
+        }
       }
     } finally {
       loginLoading.value = false;
