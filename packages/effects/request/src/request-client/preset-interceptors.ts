@@ -60,16 +60,23 @@ export const authenticateResponseInterceptor = ({
   return {
     rejected: async (error) => {
       const { config, response } = error;
+
       // 如果不是 401 错误，直接抛出异常
       if (response?.status !== 401) {
         throw error;
       }
       // 判断是否启用了 refreshToken 功能
       // 如果没有启用或者已经是重试请求了，直接跳转到重新登录
-      if (!enableRefreshToken || config.__isRetryRequest) {
+      // if (!enableRefreshToken || config.__isRetryRequest) {
+      //   await doReAuthenticate();
+      //   throw error;
+      // }
+
+      if (config.__isRetryRequest && response.data.message == "expiredRefreshToken") {
         await doReAuthenticate();
         throw error;
       }
+
       // 如果正在刷新 token，则将请求加入队列，等待刷新完成
       if (client.isRefreshing) {
         return new Promise((resolve) => {
@@ -130,35 +137,35 @@ export const errorMessageResponseInterceptor = (
         return Promise.reject(error);
       }
 
-      let errorMessage: string;
-      const status = error?.response?.status;
+      // const status = error?.response?.status;
+      let errorMessage: string = error?.error ?? "";
 
-      switch (status) {
-        case 400: {
-          errorMessage = $t('ui.fallback.http.badRequest');
-          break;
-        }
-        case 401: {
-          errorMessage = $t('ui.fallback.http.unauthorized');
-          break;
-        }
-        case 403: {
-          errorMessage = $t('ui.fallback.http.forbidden');
-          break;
-        }
-        case 404: {
-          errorMessage = $t('ui.fallback.http.notFound');
-          break;
-        }
-        case 408: {
-          errorMessage = $t('ui.fallback.http.requestTimeout');
-          break;
-        }
-        default: {
-          errorMessage = $t('ui.fallback.http.internalServerError');
-        }
-      }
-      makeErrorMessage?.(errorMessage, error);
+      // switch (status) {
+      //   case 400: {
+      //     errorMessage = $t('ui.fallback.http.badRequest');
+      //     break;
+      //   }
+      //   case 401: {
+      //     errorMessage = $t('ui.fallback.http.unauthorized');
+      //     break;
+      //   }
+      //   case 403: {
+      //     errorMessage = $t('ui.fallback.http.forbidden');
+      //     break;
+      //   }
+      //   case 404: {
+      //     errorMessage = $t('ui.fallback.http.notFound');
+      //     break;
+      //   }
+      //   case 408: {
+      //     errorMessage = $t('ui.fallback.http.requestTimeout');
+      //     break;
+      //   }
+      //   default: {
+      //     errorMessage = $t('ui.fallback.http.internalServerError');
+      //   }
+      // }
+      makeErrorMessage?.($t(errorMessage), error);
       return Promise.reject(error);
     },
   };
