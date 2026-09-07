@@ -354,7 +354,6 @@ The value must keep flowing in through `modelValue` (in a slot that means `v-bin
 Only components that fully own their internal state need to sync from the returned `value`.
 
 :::
-
 ## Form Codec
 
 Use the form-level `codec` when component values and the backend payload have different shapes. `encode` converts the complete `TFormValues` object to `TSubmitValues`; `decode` performs the inverse conversion. Multi-field splits and merges are atomic and do not depend on schema order or string-path writes.
