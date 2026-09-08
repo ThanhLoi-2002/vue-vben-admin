@@ -13,10 +13,7 @@ import {
 } from '@vben-core/composables';
 import { IconifyIcon } from '@vben-core/icons';
 import { VbenIconButton } from '@vben-core/shadcn-ui';
-import {
-  ELEMENT_ID_LAYOUT_SCROLL,
-  ELEMENT_ID_MAIN_CONTENT,
-} from '@vben-core/shared/constants';
+import { ELEMENT_ID_LAYOUT_SCROLL, ELEMENT_ID_MAIN_CONTENT } from '@vben-core/shared/constants';
 
 import { useEventListener, useScroll } from '@vueuse/core';
 
@@ -124,8 +121,7 @@ const {
  * 顶栏是否自动隐藏
  */
 const isHeaderAutoActive = computed(
-  () =>
-    props.headerMode === 'auto' && !isMixedNav.value && !isFullContent.value,
+  () => props.headerMode === 'auto' && !isMixedNav.value && !isFullContent.value,
 );
 
 const isHeaderOverlayModeActive = computed(
@@ -149,22 +145,15 @@ const headerWrapperHeight = computed(() => {
 });
 
 const getSideCollapseWidth = computed(() => {
-  const {
-    sidebarCollapseShowTitle,
-    sidebarExtraCollapsedWidth,
-    sideCollapseWidth,
-  } = props;
+  const { sidebarCollapseShowTitle, sidebarExtraCollapsedWidth, sideCollapseWidth } = props;
 
-  return sidebarCollapseShowTitle ||
-    isSidebarMixedNav.value ||
-    isHeaderMixedNav.value
+  return sidebarCollapseShowTitle || isSidebarMixedNav.value || isHeaderMixedNav.value
     ? sidebarExtraCollapsedWidth
     : sideCollapseWidth;
 });
 
 const activeSidebarCollapse = computed({
-  get: () =>
-    props.isMobile ? !mobileSidebarOpen.value : sidebarCollapse.value,
+  get: () => (props.isMobile ? !mobileSidebarOpen.value : sidebarCollapse.value),
   set: (value: boolean) => {
     if (props.isMobile) {
       mobileSidebarOpen.value = !value;
@@ -202,10 +191,7 @@ const getSidebarWidth = computed(() => {
 
   if (
     !sidebarEnableState.value ||
-    (sidebarHidden &&
-      !isSidebarMixedNav.value &&
-      !isMixedNav.value &&
-      !isHeaderMixedNav.value)
+    (sidebarHidden && !isSidebarMixedNav.value && !isMixedNav.value && !isHeaderMixedNav.value)
   ) {
     return width;
   }
@@ -261,9 +247,7 @@ const showSidebar = computed(() => {
 /**
  * 遮罩可见性
  */
-const maskVisible = computed(
-  () => !activeSidebarCollapse.value && props.isMobile,
-);
+const maskVisible = computed(() => !activeSidebarCollapse.value && props.isMobile);
 
 const mainStyle = computed(() => {
   let width = '100%';
@@ -324,9 +308,7 @@ const tabbarStyle = computed((): CSSProperties => {
       : getSideCollapseWidth.value;
 
     // 设置 marginLeft，根据侧边栏是否折叠来决定
-    marginLeft = activeSidebarCollapse.value
-      ? getSideCollapseWidth.value
-      : onHoveringWidth;
+    marginLeft = activeSidebarCollapse.value ? getSideCollapseWidth.value : onHoveringWidth;
 
     // 设置 tabbar 的宽度，计算方式为 100% 减去侧边栏的宽度
     width = `calc(100% - ${activeSidebarCollapse.value ? getSidebarWidth.value : onHoveringWidth}px)`;
@@ -393,9 +375,7 @@ const headerWrapperStyle = computed((): CSSProperties => {
     left: isMixedNav.value ? 0 : mainStyle.value.sidebarAndExtraWidth,
     position: fixed ? 'fixed' : 'static',
     top: 0,
-    transform: fixed
-      ? `translate3d(0, ${hidden ? '-100%' : '0'}, 0)`
-      : undefined,
+    transform: fixed ? `translate3d(0, ${hidden ? '-100%' : '0'}, 0)` : undefined,
     transitionDuration: fixed ? undefined : '0ms',
     width: mainStyle.value.width,
     willChange: fixed ? 'transform' : undefined,
@@ -487,12 +467,9 @@ watch(
   },
 );
 
-watch(
-  [() => props.headerMode, () => isMixedNav.value, () => isFullContent.value],
-  () => {
-    headerIsHidden.value = false;
-  },
-);
+watch([() => props.headerMode, () => isMixedNav.value, () => isFullContent.value], () => {
+  headerIsHidden.value = false;
+});
 
 useEventListener(mainRef, 'mousemove', handleHeaderMouseMove, {
   passive: true,
@@ -526,8 +503,7 @@ function updateHeaderVisibilityFromMouse(mouseY: null | number) {
   }
 
   const isInTriggerZone = mouseY <= HEADER_TRIGGER_DISTANCE;
-  const isInHeaderZone =
-    !headerIsHidden.value && mouseY <= headerWrapperHeight.value;
+  const isInHeaderZone = !headerIsHidden.value && mouseY <= headerWrapperHeight.value;
 
   headerIsHidden.value = !(isInTriggerZone || isInHeaderZone);
 }
@@ -538,11 +514,7 @@ function handleLayoutScroll() {
     return;
   }
 
-  if (
-    props.headerMode !== 'auto-scroll' ||
-    isMixedNav.value ||
-    isFullContent.value
-  ) {
+  if (props.headerMode !== 'auto-scroll' || isMixedNav.value || isFullContent.value) {
     return;
   }
   resolveHeaderVisibilityOnScroll();
@@ -601,9 +573,7 @@ const layoutStaticHeaderTarget = `#${idLayoutStaticHeader}`;
       :extra-width="sidebarExtraWidth"
       :fixed-extra="sidebarExpandOnHover"
       :header-height="sidebarHeaderHeight"
-      :extra-title-height="
-        isSidebarMixedNav || isHeaderMixedNav ? sidebarExtraTitleHeight : 0
-      "
+      :extra-title-height="isSidebarMixedNav || isHeaderMixedNav ? sidebarExtraTitleHeight : 0"
       :is-sidebar-mixed="isSidebarMixedNav || isHeaderMixedNav"
       :is-mobile="isMobile"
       :margin-top="sidebarMarginTop"
@@ -685,11 +655,7 @@ const layoutStaticHeaderTarget = `#${idLayoutStaticHeader}`;
             <slot name="header"></slot>
           </LayoutHeader>
 
-          <LayoutTabbar
-            v-if="tabbarEnable"
-            :height="tabbarHeight"
-            :style="tabbarStyle"
-          >
+          <LayoutTabbar v-if="tabbarEnable" :height="tabbarHeight" :style="tabbarStyle">
             <slot name="tabbar"></slot>
           </LayoutTabbar>
         </div>

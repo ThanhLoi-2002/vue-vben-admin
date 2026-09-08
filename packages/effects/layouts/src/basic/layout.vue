@@ -194,6 +194,7 @@ const {
  * @param deep 是否深度包装。对于双列布局，只需要包装第一层，因为更深层的数据会在扩展菜单中重新包装
  */
 function wrapperMenus(menus: MenuRecordRaw[], deep: boolean = true) {
+  console.log(menus)
   return deep
     ? mapTree(menus, (item) => {
         return { ...cloneDeep(item), name: $t(item.name) };

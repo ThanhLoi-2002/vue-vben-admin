@@ -441,6 +441,8 @@ onUnmounted(() => {
           <slot name="extra"></slot>
         </VbenScrollbar>
       </div>
+      
+      <!-- thay đổi độ rộng sidebar -->
       <div
         v-if="draggable"
         ref="dragBarRef"

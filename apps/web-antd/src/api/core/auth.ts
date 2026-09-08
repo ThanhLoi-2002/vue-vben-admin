@@ -1,4 +1,4 @@
-import type { IResponse } from '#/type/common';
+import type { IResponse } from '#/typings/common';
 
 import { baseRequestClient, requestClient } from '#/api/request';
 

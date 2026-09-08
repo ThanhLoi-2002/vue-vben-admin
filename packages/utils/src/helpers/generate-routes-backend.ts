@@ -25,7 +25,7 @@ async function generateRoutesByBackend(
   const {
     fetchMenuListAsync,
     layoutMap = {},
-    pageMap = {},
+    pageMap = {}, // file view.vue - import.meta.glob('../views/**/*.vue')
     forbiddenComponent,
   } = options;
 
@@ -43,6 +43,7 @@ async function generateRoutesByBackend(
 
     let routes = convertRoutes(menuRoutes, layoutMap, normalizePageMap);
 
+    console.log(routes)
     if (forbiddenComponent) {
       routes = mapTree(routes, (route) => {
         if (menuHasVisibleWithForbidden(route)) {
@@ -60,7 +61,7 @@ async function generateRoutesByBackend(
 }
 
 function convertRoutes(
-  routes: RouteRecordStringComponent[],
+  routes: RouteRecordStringComponent[], // routes load từ database
   layoutMap: ComponentRecordType,
   pageMap: ComponentRecordType,
 ): RouteRecordRaw[] {
@@ -78,9 +79,12 @@ function convertRoutes(
       // 页面组件转换
     } else if (component) {
       const normalizePath = normalizeViewPath(component);
-      const pageKey = normalizePath.endsWith('.vue')
-        ? normalizePath
-        : `${normalizePath}.vue`;
+      // const pageKey = normalizePath.endsWith('.vue')
+      //   ? normalizePath
+      //   : `${normalizePath}.vue`;
+
+      const pageKey = normalizePath.endsWith('.vue') ? normalizePath : ''
+
       if (pageMap[pageKey]) {
         route.component = pageMap[pageKey];
       } else {

@@ -3,7 +3,7 @@ import type { Component } from 'vue';
 
 import type { LayoutType } from '@vben/types';
 
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 import { CircleHelp } from '@vben/icons';
 import { $t } from '@vben/locales';
@@ -83,6 +83,10 @@ const PRESET = computed((): PresetItem[] => [
 function activeClass(theme: string): string[] {
   return theme === modelValue.value ? ['outline-box-active'] : [];
 }
+
+watch(() => modelValue.value, () => {
+  console.log(modelValue.value)
+})
 </script>
 
 <template>

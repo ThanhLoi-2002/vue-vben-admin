@@ -84,6 +84,7 @@ async function generateRoutes(
   const { forbiddenComponent, roles, routes } = options;
 
   let resultRoutes: RouteRecordRaw[] = routes;
+
   switch (mode) {
     case 'backend': {
       resultRoutes = await generateRoutesByBackend(options);
@@ -192,6 +193,7 @@ function mergeRoutesByName(
 
   for (const route of baseRoutes) {
     const clone = { ...route } as RouteRecordRaw;
+    console.log(clone)
     result.push(clone);
     if (clone.name && isString(clone.name)) {
       routeMap.set(clone.name as string, clone);
