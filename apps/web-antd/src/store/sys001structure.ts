@@ -3,7 +3,9 @@ import { ref } from 'vue';
 
 import { defineStore } from 'pinia';
 
-import { getAllStructuresApi } from '#/api';
+import { createOrUpdateStructure, getAllStructuresApi } from '#/api';
+import type { Recordable, Sys001structure } from '@vben/types';
+import { notification } from 'ant-design-vue';
 
 export const useSys001structureStore = defineStore('sys001structure', () => {
   const isLoading = ref(false);
@@ -25,6 +27,20 @@ export const useSys001structureStore = defineStore('sys001structure', () => {
     }
   }
 
+  async function createOrUpdateNode(node: Recordable<Sys001structure>, id: number | undefined) {
+    try {
+      const { message: m, data } = await createOrUpdateStructure(node, id);
+
+      notification.success({
+        duration: 3,
+        message: m,
+      });
+      return data
+    } catch (e: any) {
+      return undefined
+    }
+  }
+
   function $reset() {
     isLoading.value = false;
   }
@@ -32,6 +48,7 @@ export const useSys001structureStore = defineStore('sys001structure', () => {
   return {
     $reset,
     getAllStructures,
+    createOrUpdateNode,
     isLoading,
   };
 });

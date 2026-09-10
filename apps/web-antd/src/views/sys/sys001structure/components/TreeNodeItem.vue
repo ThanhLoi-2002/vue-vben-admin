@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import type { Sys001structure } from '#/typings/entities/sys001structure';
-
-import { h, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import { IconifyIcon } from '@vben/icons';
 
 import { Button, Tag } from 'ant-design-vue';
+
+import { MenuType } from '#/typings/enum';
+import type { Sys001structure } from '@vben/types';
 
 // Đặt tên component để Vue nhận diện và gọi lại chính nó (Đệ quy)
 defineOptions({
@@ -15,10 +16,12 @@ defineOptions({
 const props = defineProps<{
   nodes: Sys001structure[];
   isReorderMode: boolean;
+  selectedId: number | undefined
 }>();
 
 const emit = defineEmits<{
   (e: 'update:nodes', nodes: Sys001structure[]): void;
+  (e: 'select:node', node: Sys001structure): void;
 }>();
 
 // Quản lý trạng thái mở/đóng các nhánh theo ID
@@ -112,11 +115,11 @@ const onDrop = (e: DragEvent, targetNode: Sys001structure, list: Sys001structure
 const getMenuTypeColor = (menuType: string) => {
   const type = menuType?.toUpperCase();
   switch (type) {
-    case 'MENU':
+    case MenuType.MENU:
       return 'blue';
-    case 'PAGE':
+    case MenuType.PAGE:
       return 'green';
-    case 'SUBMENU':
+    case MenuType.SUB_PAGE:
       return 'purple';
     default:
       return 'default';
@@ -136,11 +139,15 @@ const getMenuTypeColor = (menuType: string) => {
       >
         <!-- Node Item -->
         <div
-          class="flex items-center justify-between p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-gray-50 transition-colors"
+          class="flex items-center justify-between px-2 py-1.5 rounded-lg border cursor-pointer transition-colors duration-200"
           :class="{
-            'border-dashed border-amber-400 bg-amber-50/30 cursor-grab active:cursor-grabbing':
+            'border-dashed border-amber-400 bg-amber-50/30 cursor-grab active:cursor-grabbing hover:bg-amber-100/50':
               isReorderMode,
+            'hover:bg-gray-100 hover:border-gray-300 dark:hover:bg-gray-600/40 dark:hover:border-gray-600 group':
+              !isReorderMode,
+            'bg-gray-100 border-gray-300 dark:bg-gray-600/40 dark:border-gray-600 group': selectedId === node.id
           }"
+          @click="emit('select:node', node)"
         >
           <div class="flex items-center gap-2.5">
             <!-- Icon tay cầm kéo thả -->
@@ -172,20 +179,18 @@ const getMenuTypeColor = (menuType: string) => {
 
             <!-- Icon -->
             <span class="text-base">
-              <component
-                :is="
-                  node.meta?.icon
-                    ? h(IconifyIcon, { icon: node.meta.icon, class: 'w-4 h-4 inline' })
-                    : node.menuType === 'PAGE'
-                      ? '📄'
-                      : '📁'
-                "
+              <IconifyIcon
+                v-if="node.icon"
+                :icon="node.icon"
+                class="w-4 h-4"
               />
             </span>
 
             <!-- Tên & Path -->
-            <div class="flex flex-col">
-              <span class="text-sm font-semibold text-gray-800">{{ node.name }}</span>
+            <div class="flex flex-col gap-y-0.5">
+              <span
+                class="text-gray-500 bg-white dark:text-gray-400 dark:bg-gray-500/30 px-1 rounded border shadow"
+                >{{ node.name }}</span>
               <span v-if="node.path" class="text-xs text-gray-400">{{ node.path }}</span>
             </div>
 
@@ -198,35 +203,35 @@ const getMenuTypeColor = (menuType: string) => {
             </Tag>
           </div>
 
-          <!-- Code & STT -->
+          <!-- action -->
           <div class="flex items-center gap-2">
-            <span
-              class="text-[10px] text-gray-400 bg-white px-1.5 py-0.5 rounded border border-gray-200"
+            <button
+              type="button"
+              class="w-5 h-5 hidden group-hover:flex items-center justify-center p-0.5 rounded bg-transparent text-gray-500 hover:bg-gray-400/20 dark:text-gray-400 transition-colors"
+              @click.stop="() => {}"
+              title="Thêm node con"
             >
-              STT: {{ node.stt }}
-            </span>
-            <span
-              class="text-xs font-mono text-gray-600 bg-white px-2 py-1 rounded border border-gray-200 shadow-2xs"
-            >
-              {{ node.code }}
-            </span>
+              <IconifyIcon icon="akar-icons:circle-plus" class="w-4 h-4" />
+            </button>
           </div>
         </div>
 
         <!-- Đệ quy hiển thị nhánh con -->
         <div
           v-if="node.children && node.children.length > 0 && isExpanded(node)"
-          class="pl-6 mt-2 border-l-2 border-gray-200 ml-4 space-y-2"
+          class="pl-5 mt-2 border-l-1 border-gray-200 dark:border-gray-600 ml-4 space-y-2"
         >
           <TreeNodeItem
             :nodes="node.children"
             :is-reorder-mode="isReorderMode"
+            :selected-id="selectedId"
             @update:nodes="
               (newChildren) => {
                 node.children = newChildren;
                 emit('update:nodes', [...nodes]);
               }
             "
+            @select:node="(childNode) => emit('select:node', childNode)"
           />
         </div>
       </li>

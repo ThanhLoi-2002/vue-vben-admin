@@ -5,6 +5,8 @@ interface Sys001structure extends BaseEntity {
   pid: number;
   code: string;
   name: string;
+  icon: string;
+  order: number
   description: string;
   type: number;
   authCode: string;
@@ -12,18 +14,18 @@ interface Sys001structure extends BaseEntity {
   layout: string
   path: string;
   menuType: MenuType;
-  meta: {
-    order: number;
-    title: string;
-    affixTab: boolean;
-    keepAlive: boolean;
-    icon: string;
-    authority: string[];
-    menuVisibleWithForbidden: boolean;
-    badge: string;
-    badgeType: string;
-    badgeVariants: string;
-  }
+  // meta: {
+  //   order: number;
+  //   title: string;
+  //   affixTab: boolean;
+  //   keepAlive: boolean;
+  //   icon: string;
+  //   authority: string[];
+  //   menuVisibleWithForbidden: boolean;
+  //   badge: string;
+  //   badgeType: string;
+  //   badgeVariants: string;
+  // }
   children: Sys001structure[];
 }
 
