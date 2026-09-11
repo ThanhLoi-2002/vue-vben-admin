@@ -8,7 +8,7 @@ import { preferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
 
-import { getAllMenusApi } from '#/api';
+import { sys001structureApi } from '#/api';
 import { $t } from '#/locales';
 import { layoutMap } from '#/utils/constant';
 
@@ -25,7 +25,7 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
         content: `${$t('common.loadingMenu')}...`,
         duration: 1.5,
       });
-      return await getAllMenusApi();
+      return await sys001structureApi.getAllMenusApi();
     },
     // 可以指定没有权限跳转403页面
     forbiddenComponent,

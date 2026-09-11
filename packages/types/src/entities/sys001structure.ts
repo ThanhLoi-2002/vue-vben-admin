@@ -4,12 +4,11 @@ import type { BaseEntity } from "./base-entity";
 interface Sys001structure extends BaseEntity {
   pid: number;
   code: string;
-  name: string;
   icon: string;
   order: number
   description: string;
   type: number;
-  authCode: string;
+  authCode: string[];
   component: string;
   layout: string
   path: string;

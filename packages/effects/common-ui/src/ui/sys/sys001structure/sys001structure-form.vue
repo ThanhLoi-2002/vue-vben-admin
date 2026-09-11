@@ -57,12 +57,14 @@ const selectNode = (node: Sys001structure) => {
 
 const resetForm = async () => await formApi.reset();
 const clearValidation = async () => await formApi.clearValidation();
+const setValues = async (options: any) => await formApi.setValues(options)
 
 defineExpose({
   getFormApi: () => formApi,
   selectNode,
   resetForm,
-  clearValidation
+  clearValidation,
+  setValues
 });
 </script>
 <template>

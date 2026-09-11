@@ -16,12 +16,13 @@ defineOptions({
 const props = defineProps<{
   nodes: Sys001structure[];
   isReorderMode: boolean;
-  selectedId: number | undefined
+  selectedId: number | undefined;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:nodes', nodes: Sys001structure[]): void;
+  (e: 'swap:nodes', nodes: Sys001structure[]): void;
   (e: 'select:node', node: Sys001structure): void;
+  (e: 'addChild:node', node: Sys001structure): void;
 }>();
 
 // Quản lý trạng thái mở/đóng các nhánh theo ID
@@ -104,7 +105,7 @@ const onDrop = (e: DragEvent, targetNode: Sys001structure, list: Sys001structure
       item.stt = index + 1;
     });
 
-    emit('update:nodes', [...list]);
+    emit('swap:nodes', [...list]);
   }
 
   draggedNodeId.value = undefined;
@@ -145,7 +146,8 @@ const getMenuTypeColor = (menuType: string) => {
               isReorderMode,
             'hover:bg-gray-100 hover:border-gray-300 dark:hover:bg-gray-600/40 dark:hover:border-gray-600 group':
               !isReorderMode,
-            'bg-gray-100 border-gray-300 dark:bg-gray-600/40 dark:border-gray-600 group': selectedId === node.id
+            'bg-gray-100 border-gray-300 dark:bg-gray-600/40 dark:border-gray-600 group':
+              selectedId === node.id,
           }"
           @click="emit('select:node', node)"
         >
@@ -179,18 +181,14 @@ const getMenuTypeColor = (menuType: string) => {
 
             <!-- Icon -->
             <span class="text-base">
-              <IconifyIcon
-                v-if="node.icon"
-                :icon="node.icon"
-                class="w-4 h-4"
-              />
+              <IconifyIcon v-if="node.icon" :icon="node.icon" class="w-4 h-4" />
             </span>
 
             <!-- Tên & Path -->
             <div class="flex flex-col gap-y-0.5">
               <span
                 class="text-gray-500 bg-white dark:text-gray-400 dark:bg-gray-500/30 px-1 rounded border shadow"
-                >{{ node.name }}</span>
+                >{{ node.code }}</span>
               <span v-if="node.path" class="text-xs text-gray-400">{{ node.path }}</span>
             </div>
 
@@ -208,7 +206,7 @@ const getMenuTypeColor = (menuType: string) => {
             <button
               type="button"
               class="w-5 h-5 hidden group-hover:flex items-center justify-center p-0.5 rounded bg-transparent text-gray-500 hover:bg-gray-400/20 dark:text-gray-400 transition-colors"
-              @click.stop="() => {}"
+              @click.stop="emit('addChild:node', node)"
               title="Thêm node con"
             >
               <IconifyIcon icon="akar-icons:circle-plus" class="w-4 h-4" />
@@ -225,13 +223,14 @@ const getMenuTypeColor = (menuType: string) => {
             :nodes="node.children"
             :is-reorder-mode="isReorderMode"
             :selected-id="selectedId"
-            @update:nodes="
+            @swap:nodes="
               (newChildren) => {
                 node.children = newChildren;
-                emit('update:nodes', [...nodes]);
+                emit('swap:nodes', [...nodes]);
               }
             "
             @select:node="(childNode) => emit('select:node', childNode)"
+            @add-child:node="(childNode) => emit('addChild:node', childNode)"
           />
         </div>
       </li>

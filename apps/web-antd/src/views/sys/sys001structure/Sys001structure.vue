@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { VbenFormSchema } from '#/adapter/form.js';
-import type { Option } from '#/typings/common.js';
 
 import { computed, onMounted, ref } from 'vue';
 
@@ -22,41 +21,11 @@ const sys001structureFormRef = ref();
 
 // Mảng chứa toàn bộ cấu trúc tree ở cấp root
 const treeData = ref<Sys001structure[]>([]);
+const allNodesFlat = ref<Sys001structure[]>([]);
 const selectedId = ref<number | undefined>(undefined);
 
 // State bật/tắt chế độ kéo thả di chuyển node
 const isReorderMode = ref<boolean>(false);
-
-function generateTreeOptions(nodes: Sys001structure[], level = 0): Option[] {
-  let options: Option[] = [];
-
-  nodes.forEach((node) => {
-    // Tạo khoảng lùi và tiền tố phân cấp dựa vào độ sâu (level)
-    const indent = level > 0 ? '|-- '.repeat(level) : '';
-
-    // Ghép nhãn theo cấu trúc: (|-- * type) + code
-    const label = `${indent}${node.code}`;
-
-    // Push node hiện tại vào mảng options
-    options.push({
-      label,
-      value: node.id,
-    });
-
-    // Nếu node có children, gọi đệ quy tiếp tục duyệt sâu xuống và tăng level lên 1
-    if (node.children && node.children.length > 0) {
-      options = options.concat(generateTreeOptions(node.children, level + 1));
-    }
-  });
-
-  return options;
-}
-
-const parentOptions = computed(() => {
-  if (treeData.value.length > 0) {
-    return generateTreeOptions(treeData.value);
-  } else return [];
-});
 
 const menuTypeOptions = mapOptions(MenuType);
 const formSchema = computed((): VbenFormSchema[] => {
@@ -70,19 +39,17 @@ const formSchema = computed((): VbenFormSchema[] => {
       componentProps: {
         showSearch: true, // Bật tính năng tìm kiếm / gõ lọc
         optionFilterProp: 'label', // Định nghĩa tìm kiếm dựa theo chữ hiển thị (label) của option
-        options: parentOptions,
+        options: allNodesFlat.value.map((item) => ({
+          value: item.id,
+          label: '|-- '.repeat(item.type) + item.code,
+        })),
+        onChange: onChangePid,
       },
     },
     {
       fieldName: 'code',
       component: 'Input',
       label: 'Code',
-      rules: 'required',
-    },
-    {
-      fieldName: 'name',
-      component: 'Input',
-      label: 'Name',
       rules: 'required',
     },
     {
@@ -168,10 +135,27 @@ const formSchema = computed((): VbenFormSchema[] => {
   ];
 });
 
+const onChangePid = (value: number) => {
+  // tìm node được chọn
+  const parent = allNodesFlat.value.find((item) => item.id === value);
+  resetForm();
+
+  if (parent) {
+    resetFormFollowParent(parent);
+  }
+};
+
 const changeReorderMode = () => {
-  isReorderMode.value = !isReorderMode.value
-  if(isReorderMode.value) resetForm()
-}
+  isReorderMode.value = !isReorderMode.value;
+
+  // bật thì reset form
+  if (isReorderMode.value) resetForm();
+  else {
+    // tắt thì lưu thứ tự
+    saveTreeOrder()
+  }
+};
+
 const getAllStructures = async () => {
   const res = await sys001structureStore.getAllStructures();
   if (res) {
@@ -180,9 +164,23 @@ const getAllStructures = async () => {
   }
 };
 
+const resetFormFollowParent = (parent: Sys001structure) => {
+  sys001structureFormRef.value.setValues({
+    pid: parent.id,
+    path: (parent.path + '/?').replace('//', '/'),
+    component: (parent.component + '/?').replace('//', '/'),
+  });
+};
+const addChild = (parent: Sys001structure) => {
+  selectedId.value = undefined;
+  sys001structureFormRef.value.resetForm();
+
+  resetFormFollowParent(parent);
+};
+
 const selectNode = (node: Sys001structure) => {
   sys001structureFormRef.value.selectNode(node);
-  sys001structureFormRef.value.clearValidation()
+  sys001structureFormRef.value.clearValidation();
   selectedId.value = node.id;
 };
 
@@ -192,13 +190,61 @@ const resetForm = () => {
 };
 
 const submit = async (data: Recordable<Sys001structure>) => {
+  const parent = allNodesFlat.value.find((item) => item.id === (data.pid as unknown as number));
+  if (parent) {
+    data = {
+      ...data,
+      type: (parent.type + 1) as any,
+    };
+  }
+
   const result = await sys001structureStore.createOrUpdateNode(data, selectedId.value);
 
-  if (result) await getAllStructures();
+  if (result) {
+    resetForm();
+    await getAllStructures();
+    syncFlatList();
+  }
+};
+
+const syncFlatList = () => {
+  const flat: Sys001structure[] = [];
+  const rec = (nodes: Sys001structure) => {
+    nodes.children.forEach((n) => {
+      flat.push(n);
+      if (n.children && n.children.length > 0) rec(n);
+    });
+  };
+
+  if (treeData.value[0]) {
+    flat.push(treeData.value[0]);
+    rec(treeData.value[0]);
+  }
+
+  allNodesFlat.value = flat;
+};
+
+const saveTreeOrder = () => {
+    const updates: Array<{ id: number; pid: number; sort: number }> = [];
+
+    const flatTree = (nodes: Sys001structure, parentId: number) => {
+        nodes.children.forEach((node, index) => {
+            updates.push({ id: node.id, pid: parentId, sort: index });
+            if (node.children && node.children.length > 0) {
+                flatTree(node, node.id);
+            }
+        });
+    };
+
+    treeData.value[0] && flatTree(treeData.value[0], 0);
+
+    console.log("MẢNG PAYLOAD GỬI LÊN SERVER SẮP XẾP:", JSON.stringify(updates, null, 2));
+    sys001structureStore.sort(updates)
 };
 
 onMounted(async () => {
   await getAllStructures();
+  syncFlatList();
 });
 </script>
 
@@ -232,8 +278,9 @@ onMounted(async () => {
             :nodes="treeData"
             :is-reorder-mode="isReorderMode"
             :selected-id="selectedId"
-            @update:nodes="(newNodes) => (treeData = newNodes)"
+            @swap:nodes="(newNodes) => (treeData = newNodes)"
             @select:node="selectNode"
+            @add-child:node="addChild"
           />
           <!-- </div> -->
         </Card>

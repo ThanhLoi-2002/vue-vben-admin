@@ -3,9 +3,10 @@ import { ref } from 'vue';
 
 import { defineStore } from 'pinia';
 
-import { createOrUpdateStructure, getAllStructuresApi } from '#/api';
+import { sys001structureApi } from '#/api';
 import type { Recordable, Sys001structure } from '@vben/types';
 import { notification } from 'ant-design-vue';
+import type { StructureSortType } from '#/typings/type';
 
 export const useSys001structureStore = defineStore('sys001structure', () => {
   const isLoading = ref(false);
@@ -18,7 +19,7 @@ export const useSys001structureStore = defineStore('sys001structure', () => {
   async function getAllStructures() {
     try {
       isLoading.value = true;
-      const data = await getAllStructuresApi();
+      const data = await sys001structureApi.getAllStructuresApi();
       return data
     } catch (e: any) {
       return undefined
@@ -29,11 +30,25 @@ export const useSys001structureStore = defineStore('sys001structure', () => {
 
   async function createOrUpdateNode(node: Recordable<Sys001structure>, id: number | undefined) {
     try {
-      const { message: m, data } = await createOrUpdateStructure(node, id);
+      const { message: m, data } = await sys001structureApi.createOrUpdateStructure(node, id);
 
       notification.success({
         duration: 3,
         message: m,
+      });
+      return data
+    } catch (e: any) {
+      return undefined
+    }
+  }
+
+  async function sort(data: StructureSortType[]) {
+    try {
+      const { message } = await sys001structureApi.sort(data);
+
+      notification.success({
+        duration: 3,
+        message,
       });
       return data
     } catch (e: any) {
@@ -49,6 +64,7 @@ export const useSys001structureStore = defineStore('sys001structure', () => {
     $reset,
     getAllStructures,
     createOrUpdateNode,
+    sort,
     isLoading,
   };
 });

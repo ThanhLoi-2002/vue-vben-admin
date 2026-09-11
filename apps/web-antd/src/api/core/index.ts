@@ -1,3 +1,3 @@
 export * from './auth';
-export * from './menu';
+export * from './sys001structure';
 export * from './user';
