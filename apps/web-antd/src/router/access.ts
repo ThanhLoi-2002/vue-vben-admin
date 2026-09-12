@@ -3,14 +3,16 @@ import type {
   GenerateMenuAndRoutesOptions,
 } from '@vben/types';
 
-import { generateAccessible } from '@vben/access';
-import { preferences } from '@vben/preferences';
+// import { generateAccessible } from '@vben/access';
+// import { preferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
 
 import { sys001structureApi } from '#/api';
 import { $t } from '#/locales';
 import { layoutMap } from '#/utils/constant';
+import { generateAccessible } from '@vben/access';
+import { preferences } from '@vben/preferences';
 
 const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
 
@@ -35,4 +37,6 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
   });
 }
 
-export { generateAccess };
+export { 
+  generateAccess,
+};

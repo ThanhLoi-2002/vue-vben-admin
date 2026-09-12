@@ -41,15 +41,15 @@ const formSchema = computed((): VbenFormSchema[] => {
         optionFilterProp: 'label', // Định nghĩa tìm kiếm dựa theo chữ hiển thị (label) của option
         options: allNodesFlat.value.map((item) => ({
           value: item.id,
-          label: '|-- '.repeat(item.type) + item.code,
+          label: '|-- '.repeat(item.type) + item.name,
         })),
         onChange: onChangePid,
       },
     },
     {
-      fieldName: 'code',
+      fieldName: 'name',
       component: 'Input',
-      label: 'Code',
+      label: 'Name',
       rules: 'required',
     },
     {

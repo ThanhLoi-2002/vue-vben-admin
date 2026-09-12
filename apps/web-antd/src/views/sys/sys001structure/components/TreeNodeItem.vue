@@ -188,7 +188,7 @@ const getMenuTypeColor = (menuType: string) => {
             <div class="flex flex-col gap-y-0.5">
               <span
                 class="text-gray-500 bg-white dark:text-gray-400 dark:bg-gray-500/30 px-1 rounded border shadow"
-                >{{ node.code }}</span>
+                >{{ node.name }}</span>
               <span v-if="node.path" class="text-xs text-gray-400">{{ node.path }}</span>
             </div>
 

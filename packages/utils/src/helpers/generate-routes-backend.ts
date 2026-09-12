@@ -43,7 +43,6 @@ async function generateRoutesByBackend(
 
     let routes = convertRoutes(menuRoutes, layoutMap, normalizePageMap);
 
-    console.log(routes)
     if (forbiddenComponent) {
       routes = mapTree(routes, (route) => {
         if (menuHasVisibleWithForbidden(route)) {

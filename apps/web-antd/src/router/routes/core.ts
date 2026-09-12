@@ -7,6 +7,7 @@ import { $t } from '#/locales';
 
 const BasicLayout = () => import('#/layouts/basic.vue');
 const AuthPageLayout = () => import('#/layouts/auth.vue');
+const EmptyLayout = () => import('#/layouts/empty.vue');
 /** 全局404页面 */
 const fallbackNotFoundRoute: RouteRecordRaw = {
   component: () => import('#/views/_core/fallback/not-found.vue'),
@@ -33,9 +34,19 @@ const coreRoutes: RouteRecordRaw[] = [
       hideInBreadcrumb: true,
       title: 'Root',
     },
-    name: 'Root',
+    name: 'BasicLayout',
     path: '/',
     redirect: preferences.app.defaultHomePath,
+    children: [],
+  },
+  {
+    component: EmptyLayout,
+    meta: {
+      hideInBreadcrumb: false,
+      title: 'Empty',
+    },
+    name: 'EmptyLayout',
+    path: '/',
     children: [],
   },
   {
