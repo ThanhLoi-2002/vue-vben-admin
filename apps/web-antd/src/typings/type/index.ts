@@ -1,1 +1,1 @@
-export type * from './sys001structure'
+export type * from './sys/sys001structure'

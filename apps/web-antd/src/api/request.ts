@@ -112,4 +112,8 @@ export const requestClient = createRequestClient(apiURL, {
   responseReturn: 'data',
 });
 
+export const requestBodyClient = createRequestClient(apiURL, {
+  responseReturn: 'body',
+});
+
 export const baseRequestClient = new RequestClient({ baseURL: apiURL });

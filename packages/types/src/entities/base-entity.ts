@@ -1,4 +1,4 @@
-import type { Sys002user } from "./sys002user";
+import type { Sys002user } from "./sys/sys002user";
 
 export interface BaseEntity {
     id: number;

@@ -20,12 +20,20 @@ export interface LanguageOption<TValue extends string = string> {
  */
 export const SUPPORT_LANGUAGES: LanguageOption<SupportedLanguagesType>[] = [
   {
-    label: '简体中文',
-    value: 'zh-CN',
+    label: 'Việt Nam',
+    value: 'vi',
+  },
+  {
+    label: 'China',
+    value: 'cn',
   },
   {
     label: 'English',
-    value: 'en-US',
+    value: 'en',
+  },
+  {
+    label: 'Taiwan',
+    value: 'tw',
   },
 ];
 

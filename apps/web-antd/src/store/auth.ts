@@ -50,6 +50,14 @@ export const useAuthStore = defineStore('auth', () => {
         userStore.setUserInfo(userInfo);
         // accessStore.setAccessCodes(accessCodes);
 
+        if (message) {
+          notification.success({
+            description: `${$t('authentication.loginSuccessDesc')}`,
+            duration: 3,
+            message: $t('authentication.loginSuccess'),
+          });
+        }
+        
         if (accessStore.loginExpired) {
           accessStore.setLoginExpired(false);
         } else {
@@ -58,14 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
             : await router.push(
               userInfo.homePath || preferences.app.defaultHomePath,
             );
-        }
-
-        if (message) {
-          notification.success({
-            description: `${$t('authentication.loginSuccessDesc')}`,
-            duration: 3,
-            message: $t('authentication.loginSuccess'),
-          });
+            window.location.reload();
         }
       }
     } finally {
