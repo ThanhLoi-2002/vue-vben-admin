@@ -66,6 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
             : await router.push(
               userInfo.homePath || preferences.app.defaultHomePath,
             );
+            // đảm bảo không lỗi khi log out xong login lại
             window.location.reload();
         }
       }

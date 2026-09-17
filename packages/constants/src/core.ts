@@ -27,6 +27,9 @@ export const SUPPORT_LANGUAGES: LanguageOption<SupportedLanguagesType>[] = [
     label: 'English',
     value: 'en-US',
   },
+];
+
+export const SUPPORT_LANGUAGES_2: LanguageOption<SupportedLanguagesType>[] = [
   {
     label: 'Việt Nam',
     value: 'vi',

@@ -3,7 +3,6 @@ import { computed, useSlots } from 'vue';
 
 import { useRefresh } from '@vben/hooks';
 import { LockKeyhole, LogOut, RotateCw } from '@vben/icons';
-import { $t } from '@vben/locales';
 import { preferences, usePreferences } from '@vben/preferences';
 import { useAccessStore } from '@vben/stores';
 
@@ -18,13 +17,13 @@ import { useMagicKeys, whenever } from '@vueuse/core';
 
 import {
   GlobalSearch,
-  LanguageToggle,
   LockScreenModal,
   Notification,
   PreferencesButton,
   ThemeToggle,
   TimezoneButton,
 } from '../../widgets';
+import LanguageToggle2 from '../../widgets/language-toggle-2.vue';
 
 interface Props {
   /**
@@ -39,6 +38,7 @@ interface Props {
    * 用户文本
    */
   text?: string;
+  t: (key: string) => string
 }
 
 defineOptions({
@@ -55,6 +55,7 @@ const emit = defineEmits<{
   clearPreferencesAndLogout: [];
   logout: [];
   openLockScreen: [];
+  changeLang: [lang: string];
 }>();
 
 const REFERENCE_VALUE = 100;
@@ -268,16 +269,16 @@ function clearPreferencesAndLogout() {
 
   <LogoutModal
     v-if="showLogoutInHeader"
-    :cancel-text="$t('common.cancel')"
-    :confirm-text="$t('common.confirm')"
+    :cancel-text="t('cancel')"
+    :confirm-text="t('confirm')"
     :fullscreen-button="false"
-    :title="$t('common.prompt')"
+    :title="t('prompt')"
     centered
     content-class="px-8 min-h-10"
     footer-class="border-none mb-3 mr-3"
     header-class="border-none"
   >
-    {{ $t('ui.widgets.logoutTip') }}
+    {{ t('logoutTip') }}
   </LogoutModal>
 
   <template
@@ -326,7 +327,7 @@ function clearPreferencesAndLogout() {
                 @clear-preferences-and-logout="clearPreferencesAndLogout"
               />
             </template>
-            {{ $t('preferences.title') }}
+            {{ t('preferences.title') }}
           </VbenTooltip>
         </template>
         <template v-else-if="slot.name === 'theme-toggle'">
@@ -334,21 +335,27 @@ function clearPreferencesAndLogout() {
             <template #trigger>
               <ThemeToggle class="mt-0.5 mr-1" />
             </template>
-            {{ $t('preferences.theme.title') }}
+            {{ t('preferences.theme.title') }}
           </VbenTooltip>
         </template>
         <template v-else-if="slot.name === 'language-toggle'">
-          <VbenTooltip side="bottom">
+          <!-- <VbenTooltip side="bottom">
             <template #trigger>
               <LanguageToggle class="mr-1" />
             </template>
-            {{ $t('preferences.widget.languageToggle') }}
+            {{ t('preferences.widget.languageToggle') }}
+          </VbenTooltip> -->
+          <VbenTooltip side="bottom">
+            <template #trigger>
+              <LanguageToggle2 class="mr-1" @change-lang="(lang) => emit('changeLang', lang)" />
+            </template>
+            {{ t('preferences.widget.languageToggle') }}
           </VbenTooltip>
         </template>
         <template v-else-if="slot.name === 'fullscreen'">
           <VbenFullScreen
             class="mr-1"
-            :tooltip="$t('preferences.widget.fullscreen')"
+            :tooltip="t('preferences.widget.fullscreen')"
           />
         </template>
         <template v-else-if="slot.name === 'timezone'">
@@ -357,7 +364,7 @@ function clearPreferencesAndLogout() {
         <template v-else-if="slot.name === 'lock-screen-btn'">
           <VbenIconButton
             class="mr-1"
-            :tooltip="$t('ui.widgets.lockScreen.title')"
+            :tooltip="t('ui.widgets.lockScreen.title')"
             @click="handleOpenLock"
           >
             <LockKeyhole class="size-4" />
@@ -366,7 +373,7 @@ function clearPreferencesAndLogout() {
         <template v-else-if="slot.name === 'logout-btn'">
           <VbenIconButton
             class="mr-1"
-            :tooltip="$t('common.logout')"
+            :tooltip="t('logout')"
             @click="handleLogout"
           >
             <LogOut class="size-4" />
@@ -377,13 +384,13 @@ function clearPreferencesAndLogout() {
             <template #trigger>
               <Notification class="mr-1" />
             </template>
-            {{ $t('preferences.widget.notification') }}
+            {{ t('preferences.widget.notification') }}
           </VbenTooltip>
         </template>
         <template v-else-if="slot.name === 'refresh'">
           <VbenIconButton
             class="my-0 mr-1 rounded-md"
-            :tooltip="$t('preferences.widget.refresh')"
+            :tooltip="t('preferences.widget.refresh')"
             @click="refresh"
           >
             <RotateCw class="size-4" />

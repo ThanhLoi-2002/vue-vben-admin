@@ -6,8 +6,6 @@ import type { IBreadcrumb } from '@vben-core/shadcn-ui';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { $t } from '@vben/locales';
-
 import { VbenBreadcrumbView } from '@vben-core/shadcn-ui';
 
 import { resolveBreadcrumbMatches } from './breadcrumb-routes';
@@ -17,6 +15,7 @@ interface Props {
   showHome?: boolean;
   showIcon?: boolean;
   type?: BreadcrumbStyleType;
+  t: (key: string) => string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -46,7 +45,7 @@ const breadcrumbs = computed((): IBreadcrumb[] => {
     resultBreadcrumb.push({
       icon,
       path: path || route.path,
-      title: title ? $t((title || name) as string) : '',
+      title: title ? props.t((title || name) as string) : '',
     });
   }
   if (props.showHome) {

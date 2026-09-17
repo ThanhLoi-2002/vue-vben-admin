@@ -1,52 +1,62 @@
-
-import { ref } from 'vue';
-
 import { defineStore } from 'pinia';
-
 import { sys005langApi } from '#/api/core/sys/sys005lang';
 import type { Sys005langFilter } from '#/typings/filter';
 import { message } from 'ant-design-vue';
+import { updatePreferences } from '@vben/preferences';
 
-export const useSys005langStore = defineStore('sys005lang', () => {
-  const isLoading = ref(false);
-  const langTranslate = ref<Record<string, string>>({})
-  const langCode = ref<string>('vi')
+export const useSys005langStore = defineStore('sys005lang', {
+  state: () => ({
+    isLoading: false,
+    langTranslate: {} as Record<string, string>,
+    langCode: 'vi',
+  }),
 
-  async function getAll(filter: Sys005langFilter) {
-    try {
-      isLoading.value = true;
-      const { data: { content, page: { totalElements } } } = await sys005langApi.getAll(filter);
-      return { content, total: totalElements }
-    } catch (e: any) {
-      return { content: [], total: 0 }
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  actions: {
+    async getAll(filter: Sys005langFilter) {
+      try {
+        this.isLoading = true;
+        const {
+          data: {
+            content,
+            page: { totalElements },
+          },
+        } = await sys005langApi.getAll(filter);
+        return { content, total: totalElements };
+      } catch (e: any) {
+        return { content: [], total: 0 };
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
-  function setLangCode(lang: string) {
-    langCode.value = lang
-  }
+    setLangCode(lang: string) {
+      this.langCode = lang;
+      updatePreferences({
+        app: {
+          langCode: lang
+        }
+      })
+    },
 
-  async function getListByLang() {
-    try {
-      const { data } = await sys005langApi.getListByLang(langCode.value);
-      langTranslate.value = data
-    } catch (e: any) {
-      message.error(e.message)
-    }
-  }
+    async getListByLang() {
+      try {
+        const { data } = await sys005langApi.getListByLang(this.langCode);
+        this.langTranslate = data;
+      } catch (e: any) {
+        message.error(e.message);
+      }
+    },
+  },
 
-  return {
-    getAll,
-    getListByLang,
-    setLangCode,
-    isLoading,
-    langTranslate,
-    langCode
-  };
-}, {
   persist: {
     pick: ['langCode'],
+    // Chạy tự động NGAY KHI Pinia vừa lấy xong langCode từ localStorage ra
+    afterHydrate: (state) => {
+      updatePreferences({
+        app: {
+          langCode: state.store.langCode, // Lấy chính langCode vừa đọc từ LocalStorage
+        },
+      });
+    },
   },
-},);
+});

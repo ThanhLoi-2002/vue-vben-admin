@@ -21,6 +21,8 @@ import { openWindow } from '@vben/utils';
 import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
+import { useSys005langStore } from '#/store/sys/sys005lang';
+import { useTranslate } from '#/composables/useTranslate';
 
 const notifications = ref<NotificationItem[]>([
   {
@@ -81,6 +83,8 @@ const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const { destroyWatermark, updateWatermark } = useWatermark();
 const { isDark } = usePreferences();
+const sys005langStore = useSys005langStore()
+const { t } = useTranslate()
 const showDot = computed(() =>
   notifications.value.some((item) => !item.isRead),
 );
@@ -214,14 +218,21 @@ watch(
     immediate: true,
   },
 );
+
+const changeLang = (lang: string) => {
+  sys005langStore.setLangCode(lang)
+  sys005langStore.getListByLang()
+}
 </script>
 
 <template>
   <BasicLayout
     :avatar
     :text="userStore.userInfo?.realName"
+    :t="t"
     @clear-preferences-and-logout="handleLogout"
     @logout="handleLogout"
+    @change-lang="changeLang"
   >
     <template #user-dropdown>
       <UserDropdown

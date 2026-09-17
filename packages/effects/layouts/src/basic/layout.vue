@@ -9,11 +9,7 @@ import { useRoute } from 'vue-router';
 
 import { useRefresh } from '@vben/hooks';
 import { $t, i18n } from '@vben/locales';
-import {
-  preferences,
-  updatePreferences,
-  usePreferences,
-} from '@vben/preferences';
+import { preferences, updatePreferences, usePreferences } from '@vben/preferences';
 import { useAccessStore, useTabbarStore, useTimezoneStore } from '@vben/stores';
 import { cloneDeep, mapTree } from '@vben/utils';
 
@@ -26,13 +22,7 @@ import { LayoutContent, LayoutContentSpinner } from './content';
 import { Copyright } from './copyright';
 import { LayoutFooter } from './footer';
 import { LayoutHeader } from './header';
-import {
-  LayoutExtraMenu,
-  LayoutMenu,
-  LayoutMixedMenu,
-  useExtraMenu,
-  useMixedMenu,
-} from './menu';
+import { LayoutExtraMenu, LayoutMenu, LayoutMixedMenu, useExtraMenu, useMixedMenu } from './menu';
 import { LayoutTabbar } from './tabbar';
 import { useLayoutScroll } from './use-layout-scroll';
 
@@ -50,6 +40,7 @@ const emit = defineEmits<{
   clearPreferencesAndLogout: [];
   clickLogo: [];
   logout: [];
+  changeLang: [lang: string];
 }>();
 
 interface Props {
@@ -63,14 +54,13 @@ interface Props {
   avatar?: string;
   /** 用户文本（如用户名） */
   text?: string;
+  t: (key: string) => string;
 }
 
 /** 最终使用的 Logo 图片地址（自定义优先，否则使用默认） */
 const finalLogoSrc = computed(() => props.logoSrc || preferences.logo.source);
 /** 最终使用的暗色 Logo 图片地址 */
-const finalLogoSrcDark = computed(
-  () => props.logoSrcDark || preferences.logo.sourceDark,
-);
+const finalLogoSrcDark = computed(() => props.logoSrcDark || preferences.logo.sourceDark);
 /** 最终使用的 Logo 文本（自定义优先，否则使用默认应用名称） */
 const finalLogoText = computed(() => props.logoText || preferences.app.name);
 
@@ -136,24 +126,16 @@ const logoCollapsed = computed(() => {
   if (isHeaderNav.value || isMixedNav.value || isHeaderSidebarNav.value) {
     return false;
   }
-  return (
-    sidebarCollapsed.value || isSideMixedNav.value || isHeaderMixedNav.value
-  );
+  return sidebarCollapsed.value || isSideMixedNav.value || isHeaderMixedNav.value;
 });
 
 const showHeaderNav = computed(() => {
-  return (
-    !isMobile.value &&
-    (isHeaderNav.value || isMixedNav.value || isHeaderMixedNav.value)
-  );
+  return !isMobile.value && (isHeaderNav.value || isMixedNav.value || isHeaderMixedNav.value);
 });
 
 const logoTheme = computed(() => {
   const showLogoInHeader =
-    !isSideMode.value ||
-    isHeaderSidebarNav.value ||
-    isMixedNav.value ||
-    isMobile.value;
+    !isSideMode.value || isHeaderSidebarNav.value || isMixedNav.value || isMobile.value;
   return showLogoInHeader ? headerTheme.value : sidebarTheme.value;
 });
 
@@ -161,8 +143,7 @@ const logoTheme = computed(() => {
  * layout-sidebar扩展区域插槽extra-title的高度
  */
 const sidebarExtraTitleHeight = computed<number | undefined>(() => {
-  const showSideExtraTitle =
-    preferences.logo.enable && preferences.logo.showText;
+  const showSideExtraTitle = preferences.logo.enable && preferences.logo.showText;
   return showSideExtraTitle ? undefined : 0;
 });
 
@@ -194,7 +175,7 @@ const {
  * @param deep 是否深度包装。对于双列布局，只需要包装第一层，因为更深层的数据会在扩展菜单中重新包装
  */
 function wrapperMenus(menus: MenuRecordRaw[], deep: boolean = true) {
-  console.log(menus)
+  console.log(menus);
   return deep
     ? mapTree(menus, (item) => {
         return { ...cloneDeep(item), name: $t(item.name) };
@@ -224,12 +205,14 @@ function clickLogo() {
   emit('clickLogo');
 }
 
+function changeLang(lang: string) {
+  emit('changeLang', lang);
+}
+
 function autoCollapseMenuByRouteMeta(route: RouteLocationNormalizedLoaded) {
   // 只在双列模式下生效
   if (
-    ['header-mixed-nav', 'sidebar-mixed-nav'].includes(
-      preferences.app.layout,
-    ) &&
+    ['header-mixed-nav', 'sidebar-mixed-nav'].includes(preferences.app.layout) &&
     route.meta &&
     route.meta.hideInMenu
   ) {
@@ -322,20 +305,14 @@ const headerSlots = computed(() => {
     @update:sidebar-collapse="
       (value: boolean) => updatePreferences({ sidebar: { collapsed: value } })
     "
-    @update:sidebar-enable="
-      (value: boolean) => updatePreferences({ sidebar: { enable: value } })
-    "
+    @update:sidebar-enable="(value: boolean) => updatePreferences({ sidebar: { enable: value } })"
     @update:sidebar-expand-on-hover="
-      (value: boolean) =>
-        updatePreferences({ sidebar: { expandOnHover: value } })
+      (value: boolean) => updatePreferences({ sidebar: { expandOnHover: value } })
     "
     @update:sidebar-extra-collapse="
-      (value: boolean) =>
-        updatePreferences({ sidebar: { extraCollapse: value } })
+      (value: boolean) => updatePreferences({ sidebar: { extraCollapse: value } })
     "
-    @update:sidebar-width="
-      (value: number) => updatePreferences({ sidebar: { width: value } })
-    "
+    @update:sidebar-width="(value: number) => updatePreferences({ sidebar: { width: value } })"
   >
     <!-- logo -->
     <template #logo>
@@ -364,14 +341,14 @@ const headerSlots = computed(() => {
         :avatar="avatar"
         :theme="theme"
         :text="text"
+        :t="t"
         @clear-preferences-and-logout="clearPreferencesAndLogout"
         @logout="handleLogout"
+        @change-lang="changeLang"
       >
-        <template
-          v-if="!showHeaderNav && preferences.breadcrumb.enable"
-          #breadcrumb
-        >
+        <template v-if="!showHeaderNav && preferences.breadcrumb.enable" #breadcrumb>
           <Breadcrumb
+            :t="t"
             :hide-when-only-one="preferences.breadcrumb.hideOnlyOne"
             :show-home="preferences.breadcrumb.showHome"
             :show-icon="preferences.breadcrumb.showIcon"
@@ -470,10 +447,7 @@ const headerSlots = computed(() => {
     <!-- 页脚 -->
     <template v-if="preferences.footer.enable" #footer>
       <LayoutFooter>
-        <Copyright
-          v-if="preferences.copyright.enable"
-          v-bind="preferences.copyright"
-        />
+        <Copyright v-if="preferences.copyright.enable" v-bind="preferences.copyright" />
       </LayoutFooter>
     </template>
 
