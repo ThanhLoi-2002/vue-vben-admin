@@ -1,5 +1,5 @@
-import type { MenuType } from "../enum";
-import type { BaseEntity } from "./base-entity";
+import type { MenuType } from "../../enum";
+import type { BaseEntity } from "../base-entity";
 
 interface Sys001structure extends BaseEntity {
   pid: number;

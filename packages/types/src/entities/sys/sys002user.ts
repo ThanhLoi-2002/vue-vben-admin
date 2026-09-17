@@ -1,4 +1,4 @@
-import type { BaseEntity } from "./base-entity"
+import type { BaseEntity } from "../base-entity"
 
 export interface Sys002user extends BaseEntity {
     username: string

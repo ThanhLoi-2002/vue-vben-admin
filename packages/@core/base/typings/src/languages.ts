@@ -18,6 +18,8 @@
  * 运行时语言列表则通过 `setSupportLanguages` 注册。
  */
 export interface SupportedLanguages {
+  'en-US': 'English';
+  'zh-CN': '简体中文';
   'en': 'English';
   'cn': 'China';
   'vi': 'Việt Nam'
