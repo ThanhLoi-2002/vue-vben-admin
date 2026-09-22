@@ -18,7 +18,6 @@ import { preferences, usePreferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 import { openWindow } from '@vben/utils';
 
-import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 import { useSys005langStore } from '#/store/sys/sys005lang';
@@ -83,8 +82,8 @@ const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const { destroyWatermark, updateWatermark } = useWatermark();
 const { isDark } = usePreferences();
-const sys005langStore = useSys005langStore()
-const { t } = useTranslate()
+const sys005langStore = useSys005langStore();
+const { t } = useTranslate();
 const showDot = computed(() =>
   notifications.value.some((item) => !item.isRead),
 );
@@ -95,7 +94,7 @@ const menus = computed(() => [
       router.push({ name: 'Profile' });
     },
     icon: 'lucide:user',
-    text: $t('page.auth.profile'),
+    text: t('page.auth.profile'),
   },
   {
     handler: () => {
@@ -104,7 +103,7 @@ const menus = computed(() => [
       });
     },
     icon: BookOpenText,
-    text: $t('ui.widgets.document'),
+    text: t('ui.widgets.document'),
   },
   {
     handler: () => {
@@ -122,7 +121,7 @@ const menus = computed(() => [
       });
     },
     icon: CircleHelp,
-    text: $t('ui.widgets.qa'),
+    text: t('ui.widgets.qa'),
   },
 ]);
 
@@ -220,9 +219,9 @@ watch(
 );
 
 const changeLang = (lang: string) => {
-  sys005langStore.setLangCode(lang)
-  sys005langStore.getListByLang()
-}
+  sys005langStore.setLangCode(lang);
+  sys005langStore.getListByLang();
+};
 </script>
 
 <template>

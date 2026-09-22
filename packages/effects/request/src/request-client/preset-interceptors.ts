@@ -67,12 +67,15 @@ export const authenticateResponseInterceptor = ({
       }
       // 判断是否启用了 refreshToken 功能
       // 如果没有启用或者已经是重试请求了，直接跳转到重新登录
-      // if (!enableRefreshToken || config.__isRetryRequest) {
-      //   await doReAuthenticate();
-      //   throw error;
-      // }
+      if (!enableRefreshToken || config.__isRetryRequest) {
+        // await doReAuthenticate();
+        // throw error;
+      }
 
-      if (config.__isRetryRequest && response.data.message == "expiredRefreshToken") {
+      if (
+        config.__isRetryRequest &&
+        response.data.message === 'expiredRefreshToken'
+      ) {
         await doReAuthenticate();
         throw error;
       }
@@ -138,7 +141,7 @@ export const errorMessageResponseInterceptor = (
       }
 
       // const status = error?.response?.status;
-      let errorMessage: string = error?.error ?? "";
+      const errorMessage: string = error?.error ?? '';
 
       // switch (status) {
       //   case 400: {

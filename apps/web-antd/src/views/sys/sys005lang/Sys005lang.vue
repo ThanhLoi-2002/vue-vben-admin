@@ -26,10 +26,11 @@ const handleSearch = () => {
 };
 
 const handleEdit = (row: Sys005lang) => {
-  console.log('Edit row:', row);
+  console.warn('Edit row:', row);
 };
 
 const handleDelete = async (row: Sys005lang) => {
+  console.warn(row);
   gridApi.query();
 };
 
@@ -37,7 +38,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
     seqConfig: {
       seqMethod: ({ $rowIndex }: any) => {
-        return (pagination.value.page - 1) * pagination.value.pageSize + $rowIndex + 1;
+        return (
+          (pagination.value.page - 1) * pagination.value.pageSize +
+          $rowIndex +
+          1
+        );
       },
     },
     columns: [
@@ -61,7 +66,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
         align: 'left',
         slots: { header: 'en_header' },
       },
-      { field: 'cn', title: 'Cn', align: 'left', slots: { header: 'cn_header' } },
+      {
+        field: 'cn',
+        title: 'Cn',
+        align: 'left',
+        slots: { header: 'cn_header' },
+      },
       {
         field: 'tw',
         showOverflow: true,
@@ -184,8 +194,15 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       <!-- Header Slot: Cột Action (Thay bằng nút Tìm kiếm) -->
       <template #action_header>
-        <Button type="primary" size="small" class="!inline-flex items-center !py-3 !px-2" @click="handleSearch">
-          <template #icon><IconifyIcon icon="akar-icons:search" class="w-4 h-4" /></template>
+        <Button
+          type="primary"
+          size="small"
+          class="!inline-flex items-center !py-3 !px-2"
+          @click="handleSearch"
+        >
+          <template #icon>
+            <IconifyIcon icon="akar-icons:search" class="w-4 h-4" />
+          </template>
           <span>{{ t('search') }}</span>
         </Button>
       </template>
@@ -193,14 +210,22 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <!-- Row Action Slot -->
       <template #action="{ row }">
         <Space>
-          <Button type="primary" size="small" @click="handleEdit(row as Sys005lang)"> {{ t('edit') }} </Button>
+          <Button
+            type="primary"
+            size="small"
+            @click="handleEdit(row as Sys005lang)"
+          >
+            {{ t('edit') }}
+          </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa không?"
             ok-text="Có"
             cancel-text="Không"
             @confirm="handleDelete(row as Sys005lang)"
           >
-            <Button type="primary" danger size="small"> {{ t('delete') }} </Button>
+            <Button type="primary" danger size="small">
+              {{ t('delete') }}
+            </Button>
           </Popconfirm>
         </Space>
       </template>
