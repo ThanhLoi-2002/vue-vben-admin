@@ -9,6 +9,7 @@ import { accessRoutes, coreRouteNames } from '#/router/routes';
 import { useAuthStore } from '#/store';
 
 import { generateAccess } from './access';
+import { nextTick, ref } from 'vue';
 
 /**
  * 通用守卫配置
@@ -128,6 +129,26 @@ function createRouterGuard(router: Router) {
   setupCommonGuard(router);
   /** 权限访问 */
   setupAccessGuard(router);
+
+  setupPageLoadGuard(router);
 }
 
-export { createRouterGuard };
+let startTime = 0;
+const routeLoadTime = ref<number>(0);
+
+function setupPageLoadGuard(router: Router) {
+  router.beforeEach((_to, _from, next) => {
+    startTime = performance.now();
+    next();
+  });
+
+  router.afterEach(() => {
+    // Đo thời gian khi DOM đã được cập nhật xong
+    nextTick(() => {
+      const endTime = performance.now();
+      routeLoadTime.value = Math.round(endTime - startTime);
+    });
+  });
+}
+
+export { createRouterGuard, routeLoadTime, setupPageLoadGuard };

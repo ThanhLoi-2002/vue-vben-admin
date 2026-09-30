@@ -45,6 +45,7 @@ const props = withDefaults(defineProps<Props>(), {
   avatar: '',
   text: '',
   t: (key: string) => key,
+  routeLoadTime: 0,
 });
 
 const emit = defineEmits<{
@@ -66,6 +67,7 @@ interface Props {
   /** 用户文本（如用户名） */
   text?: string;
   t?: (key: string) => string;
+  routeLoadTime?: number;
 }
 
 /** 最终使用的 Logo 图片地址（自定义优先，否则使用默认） */
@@ -324,6 +326,7 @@ const headerSlots = computed(() => {
     :tabbar-enable="preferences.tabbar.enable"
     :tabbar-height="preferences.tabbar.height"
     :z-index="preferences.app.zIndex"
+    :route-load-time="routeLoadTime"
     @side-mouse-leave="handleSideMouseLeave"
     @toggle-sidebar="toggleSidebar"
     @update:sidebar-collapse="

@@ -22,6 +22,7 @@ import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 import { useSys005langStore } from '#/store/sys/sys005lang';
 import { useTranslate } from '#/composables/useTranslate';
+import { routeLoadTime } from '#/router/guard';
 
 const notifications = ref<NotificationItem[]>([
   {
@@ -229,6 +230,7 @@ const changeLang = (lang: string) => {
     :avatar
     :text="userStore.userInfo?.realName"
     :t="t"
+    :route-load-time="routeLoadTime"
     @clear-preferences-and-logout="handleLogout"
     @logout="handleLogout"
     @change-lang="changeLang"

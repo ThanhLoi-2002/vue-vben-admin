@@ -46,8 +46,15 @@ const coreRoutes: RouteRecordRaw[] = [
       title: 'Empty',
     },
     name: 'EmptyLayout',
-    path: '/',
-    children: [],
+    path: '/empty',
+    children: [
+      {
+        path: '/page-a', // 👈 URL hiển thị đúng là: http://localhost:5666/page-a
+        name: 'PageA',
+        component: () => import('#/views/empty/page-a.vue'),
+        meta: { title: 'Trang A' },
+      },
+    ],
   },
   {
     component: AuthPageLayout,
