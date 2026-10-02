@@ -137,9 +137,10 @@ let startTime = 0;
 const routeLoadTime = ref<number>(0);
 
 function setupPageLoadGuard(router: Router) {
-  router.beforeEach((_to, _from, next) => {
+  router.beforeEach((_to, _from) => {
     startTime = performance.now();
-    next();
+    // next();
+    return true;
   });
 
   router.afterEach(() => {

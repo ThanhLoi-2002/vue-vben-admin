@@ -1,28 +1,35 @@
 export type IResponse<T = any> = {
-  code: number
-  error: string
+  code: number;
+  error: string;
   message: string;
   data: T;
-}
+};
 
 export interface Option {
-  label: string
-  value: number | string
+  label: string;
+  value: number | string;
 }
 
 export interface PaginationType<T = any> {
-  content: T[]
+  content: T[];
   page: {
-    size: number
-    totalElements: number
-    totalPages: number
-  }
+    size: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
-
 export interface BaseFilter {
-  page?: number
-  limit?: number
-  lastId?: number
-  search?: string
+  page?: number;
+  limit?: number;
+  lastId?: number;
+  search?: string;
+}
+
+export interface ButtonGroupItem {
+  label: string;
+  url: string;
+  icon?: string;
+  isExternal?: boolean;
+  isOpenNewTab?: boolean;
 }

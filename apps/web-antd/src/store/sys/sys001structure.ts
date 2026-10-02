@@ -19,39 +19,42 @@ export const useSys001structureStore = defineStore('sys001structure', {
     async getAllStructures() {
       try {
         this.isLoading = true;
-        const data = await sys001structureApi.getAllStructuresApi();
+        const { data } = await sys001structureApi.getAllStructuresApi();
         return data;
-      } catch (e: any) {
+      } catch {
         return undefined;
       } finally {
         this.isLoading = false;
       }
     },
 
-    async createOrUpdateNode(node: Recordable<Sys001structure>, id: number | undefined) {
+    async createOrUpdateNode(
+      node: Recordable<Sys001structure>,
+      id: number | undefined,
+    ) {
       try {
-        const { message: m, data } = await sys001structureApi.createOrUpdateStructure(node, id);
-
+        const { message, data } =
+          await sys001structureApi.createOrUpdateStructure(node, id);
         notification.success({
           duration: 3,
-          message: m,
+          message,
         });
         return data;
-      } catch (e: any) {
+      } catch {
         return undefined;
       }
     },
 
     async sort(data: StructureSortType[]) {
       try {
-        const { message } = await sys001structureApi.sort(data);
+        const { message } = await sys001structureApi.sorted(data);
 
         notification.success({
           duration: 3,
           message,
         });
         return data;
-      } catch (e: any) {
+      } catch {
         return undefined;
       }
     },

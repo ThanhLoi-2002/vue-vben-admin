@@ -29,7 +29,25 @@ const rootMenu = useMenuContext();
 const subMenu = useSubMenuContext();
 const { parentMenu, parentPaths } = useMenu();
 
-const active = computed(() => props.path === rootMenu?.activePath);
+// const active = computed(() => props.path === rootMenu?.activePath);
+const active = computed(() => {
+  const currentPath = rootMenu?.activePath;
+  const menuPath = props.path;
+
+  if (!currentPath || !menuPath) return false;
+
+  // Khớp chính xác route hiện tại
+  if (currentPath === menuPath) return true;
+
+  // Nếu muốn menu cha sáng khi ở trang con trực thuộc (ví dụ /hrm/detail sáng khi active /hrm)
+  // Chỉ áp dụng nếu menuPath không phải là trang chủ '/'
+  if (menuPath !== '/' && currentPath.startsWith(`${menuPath}/`)) {
+    return true;
+  }
+
+  return false;
+});
+
 const menuIcon = computed(() =>
   active.value ? props.activeIcon || props.icon : props.icon,
 );

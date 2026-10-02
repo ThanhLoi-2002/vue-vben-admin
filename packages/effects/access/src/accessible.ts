@@ -112,6 +112,48 @@ async function generateRoutes(
   }
 
   /**
+   * Bước 1: Duyệt qua danh sách routes để tách các item có menuType === 'BUTTON'
+   * ra khỏi children và đẩy lên cùng cấp với parent.
+   */
+  const extractButtons = (items: any[]): any[] => {
+    const flatList: any[] = [];
+
+    items.forEach((item) => {
+      if (item.children && item.children.length > 0) {
+        // Lọc lấy các con là 'BUTTON'
+        const buttons = item.children.filter(
+          (child: any) =>
+            child.meta?.menuType === 'BUTTON' || child.menuType === 'BUTTON',
+        );
+
+        // Giữ lại các con không phải 'BUTTON'
+        const nonButtons = item.children.filter(
+          (child: any) =>
+            child.meta?.menuType !== 'BUTTON' && child.menuType !== 'BUTTON',
+        );
+
+        // Đệ quy xử lý tiếp cho các children không phải button
+        item.children = extractButtons(nonButtons);
+
+        // Đưa item hiện tại vào danh sách
+        flatList.push(item);
+
+        // Đưa các button con ra ngoài (cùng cấp với item)
+        buttons.forEach((btn: any) => {
+          delete btn.children; // Button thường không có children
+          flatList.push(btn);
+        });
+      } else {
+        flatList.push(item);
+      }
+    });
+
+    return flatList;
+  };
+
+  resultRoutes = extractButtons(resultRoutes);
+
+  /**
    * 调整路由树，做以下处理：
    * 1. 对未添加redirect的路由添加redirect
    * 2. 将懒加载的组件名称修改为当前路由的名称（如果启用了keep-alive的话）
@@ -193,7 +235,6 @@ function mergeRoutesByName(
 
   for (const route of baseRoutes) {
     const clone = { ...route } as RouteRecordRaw;
-    console.log(clone)
     result.push(clone);
     if (clone.name && isString(clone.name)) {
       routeMap.set(clone.name as string, clone);
