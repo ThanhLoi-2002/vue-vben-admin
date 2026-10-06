@@ -1,4 +1,4 @@
-import type { ComponentRecordType } from "@vben/types";
+import type { ComponentRecordType } from '@vben/types';
 
 import { BasicLayout, EmptyLayout, IFrameView } from '#/layouts';
 
@@ -7,9 +7,3 @@ export const layoutMap: ComponentRecordType = {
   IFrameView,
   EmptyLayout,
 };
-
-export enum LayoutEnum {
-  BasicLayout = 'BasicLayout',
-  IFrameView = 'IFrameView',
-  EmptyLayout = 'EmptyLayout',
-}

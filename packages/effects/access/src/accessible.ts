@@ -1,5 +1,6 @@
 import type { Component, DefineComponent } from 'vue';
 
+import { MenuTypeEnum } from '@vben/types';
 import type {
   AccessModeType,
   GenerateMenuAndRoutesOptions,
@@ -27,7 +28,7 @@ async function generateAccessible(
   options.routes = cloneDeep(options.routes);
 
   // 生成路由
-  const accessibleRoutes = await generateRoutes(mode, options);
+  const { accessibleRoutes, menuRoutes } = await generateRoutes(mode, options);
 
   const root = router.getRoutes().find((item) => item.path === '/');
 
@@ -67,7 +68,7 @@ async function generateAccessible(
   }
 
   // 生成菜单
-  const accessibleMenus = generateMenus(accessibleRoutes, options.router);
+  const accessibleMenus = generateMenus(menuRoutes, options.router);
 
   return { accessibleMenus, accessibleRoutes };
 }
@@ -115,7 +116,7 @@ async function generateRoutes(
    * Bước 1: Duyệt qua danh sách routes để tách các item có menuType === 'BUTTON'
    * ra khỏi children và đẩy lên cùng cấp với parent.
    */
-  const extractButtons = (items: any[]): any[] => {
+  const extractButtons = (items: any[]): RouteRecordRaw[] => {
     const flatList: any[] = [];
 
     items.forEach((item) => {
@@ -123,13 +124,15 @@ async function generateRoutes(
         // Lọc lấy các con là 'BUTTON'
         const buttons = item.children.filter(
           (child: any) =>
-            child.meta?.menuType === 'BUTTON' || child.menuType === 'BUTTON',
+            child.meta?.menuType === MenuTypeEnum.BUTTON ||
+            child.menuType === MenuTypeEnum.BUTTON,
         );
 
         // Giữ lại các con không phải 'BUTTON'
         const nonButtons = item.children.filter(
           (child: any) =>
-            child.meta?.menuType !== 'BUTTON' && child.menuType !== 'BUTTON',
+            child.meta?.menuType !== MenuTypeEnum.BUTTON &&
+            child.menuType !== MenuTypeEnum.BUTTON,
         );
 
         // Đệ quy xử lý tiếp cho các children không phải button
@@ -153,72 +156,142 @@ async function generateRoutes(
 
   resultRoutes = extractButtons(resultRoutes);
 
+  // -------------------------------------------------------------
+  // TÁCH LUỒNG: Tạo 1 bản sao nguyên vẹn dành riêng cho Menu
+  // -------------------------------------------------------------
+  const menuRoutes = cloneDeep(resultRoutes);
+
+  // Luồng xử lý dành riêng cho Router đăng ký (bóc tách layout)
+  let routerRoutes = cloneDeep(resultRoutes);
+
   /**
-   * 调整路由树，做以下处理：
-   * 1. 对未添加redirect的路由添加redirect
-   * 2. 将懒加载的组件名称修改为当前路由的名称（如果启用了keep-alive的话）
+   * Bước 2: Tách các route có khai báo `layout` ra khỏi cây menu
+   * và gom nhóm theo tên layout (ví dụ: 'empty', 'auth', ...)
    */
-  resultRoutes = mapTree(resultRoutes, (route, parent) => {
-    // 重新包装component，使用与路由名称相同的name以支持keep-alive的条件缓存。
-    if (
-      route.meta?.keepAlive &&
-      isFunction(route.component) &&
-      route.name &&
-      isString(route.name)
-    ) {
-      const originalComponent = route.component as () => Promise<{
-        default: Component | DefineComponent;
-      }>;
-      route.component = async () => {
-        const component = await originalComponent();
-        if (!component.default) return component;
-        return defineComponent({
-          name: route.name as string,
-          setup(props, { attrs, slots }) {
-            return () => h(component.default, { ...props, ...attrs }, slots);
-          },
-        });
-      };
-    }
+  const layoutRoutesMap: Record<string, RouteRecordRaw[]> = {};
 
-    // 如果有redirect或者没有子路由，则直接返回
-    if (route.redirect || !route.children || route.children.length === 0) {
-      return route;
-    }
-    const firstChild = route.children[0];
+  const extractLayoutRoutes = (items: any[]): RouteRecordRaw[] => {
+    const result: any[] = [];
 
-    if (!firstChild?.path || firstChild.path.startsWith('/')) {
-      return route;
-    }
+    items.forEach((item) => {
+      // Tìm giá trị layout (hỗ trợ đọc từ item.layout hoặc item.meta.layout)
+      const layoutName = item.layout || item.meta?.layout;
 
-    // fork 定制：如果第一个子路由是动态路由（如 :id），说明当前路由本身是一个
-    // “列表+详情”页面（渲染自身组件），不应自动重定向到未填充的动态参数，
-    // 否则地址栏会出现字面量 ":id" 或匹配失败导致 404。
-    // 详见对上游重构 commit f00a8812 的修复。
-    if (firstChild.path.startsWith(':')) {
-      return route;
-    }
+      if (layoutName) {
+        if (!layoutRoutesMap[layoutName]) {
+          layoutRoutesMap[layoutName] = [];
+        }
 
-    // 拼接子路由的重定向绝对路径。
-    // - 当 parent.redirect 为字符串时，它已经是累计好的绝对路径，直接替换最后一段
-    //   即可正确支持任意层级的深层嵌套（如 /demos/nested/menu2/menu2-1）。
-    // - fork 定制：后端菜单可能传入对象形式的 redirect（如 { name }），无法 split，
-    //   此时回退到使用 parent.path 拼接（这类 parent 为顶级路由，path 为绝对路径）。
-    if (parent && parent.redirect && isString(parent.redirect)) {
-      const parentSplit = parent.redirect.split('/');
-      parentSplit.splice(-1, 2, route.path, firstChild.path);
-      const redirectPath = parentSplit.join('/');
-      route.redirect = redirectPath;
-    } else if (parent && parent.redirect) {
-      route.redirect = `${parent.path}/${route.path}/${firstChild.path}`;
+        // Tách khỏi cha nên đảm bảo đường dẫn path là tuyệt đối nếu cần
+        const routeToAdd = { ...item };
+        delete routeToAdd.layout; // Xóa key layout sau khi đã bóc tách
+
+        layoutRoutesMap[layoutName].push(routeToAdd);
+      } else {
+        // Nếu không có layout riêng, tiếp tục đệ quy quét con
+        if (item.children && item.children.length > 0) {
+          item.children = extractLayoutRoutes(item.children);
+        }
+        result.push(item);
+      }
+    });
+
+    return result;
+  };
+
+  routerRoutes = extractLayoutRoutes(routerRoutes);
+
+  /**
+   * Bước 3: Đẩy các layout route vào Layout Container tương ứng
+   */
+  Object.keys(layoutRoutesMap).forEach((layoutKey) => {
+    // Tìm Layout tương ứng trong danh sách routes (ví dụ: EmptyLayout có name/path khớp với layoutKey)
+    const targetLayout = routerRoutes.find((r) => {
+      const nameMatch =
+        r.name?.toString().toLowerCase() === layoutKey.toLowerCase();
+      const pathMatch =
+        r.path?.replaceAll('/', '').toLowerCase() === layoutKey.toLowerCase();
+      return nameMatch || pathMatch;
+    });
+
+    const routesToPush = layoutRoutesMap[layoutKey] ?? [];
+
+    if (targetLayout) {
+      targetLayout.children = targetLayout.children || [];
+      targetLayout.children.push(...routesToPush);
     } else {
-      route.redirect = `${route.path}/${firstChild.path}`;
+      // Trường hợp không tìm thấy Layout Container tương ứng, đẩy ra ngoài root dạng noBasicLayout
+      routesToPush.forEach((route) => {
+        route.meta = {
+          ...route.meta,
+          title: route.meta?.title ?? '',
+          noBasicLayout: true,
+        };
+        routerRoutes.push(route);
+      });
     }
-
-    return route;
   });
 
-  return resultRoutes;
+  /**
+   * Chuẩn hóa component & redirect cho routerRoutes
+   */
+  const processRouteTree = (tree: RouteRecordRaw[]): RouteRecordRaw[] => {
+    return mapTree(tree, (route, parent) => {
+      if (
+        route.meta?.keepAlive &&
+        isFunction(route.component) &&
+        route.name &&
+        isString(route.name)
+      ) {
+        const originalComponent = route.component as () => Promise<{
+          default: Component | DefineComponent;
+        }>;
+        route.component = async () => {
+          const component = await originalComponent();
+          if (!component.default) return component;
+          return defineComponent({
+            name: route.name as string,
+            setup(props, { attrs, slots }) {
+              return () => h(component.default, { ...props, ...attrs }, slots);
+            },
+          });
+        };
+      }
+
+      if (route.redirect || !route.children || route.children.length === 0) {
+        return route;
+      }
+      const firstChild = route.children[0];
+
+      if (!firstChild?.path || firstChild.path.startsWith('/')) {
+        return route;
+      }
+
+      if (firstChild.path.startsWith(':')) {
+        return route;
+      }
+
+      if (parent && parent.redirect && isString(parent.redirect)) {
+        const parentSplit = parent.redirect.split('/');
+        parentSplit.splice(-1, 2, route.path, firstChild.path);
+        const redirectPath = parentSplit.join('/');
+        route.redirect = redirectPath;
+      } else if (parent && parent.redirect) {
+        route.redirect = `${parent.path}/${route.path}/${firstChild.path}`;
+      } else {
+        route.redirect = `${route.path}/${firstChild.path}`;
+      }
+
+      return route;
+    });
+  };
+
+  routerRoutes = processRouteTree(routerRoutes);
+
+  return {
+    accessibleRoutes: routerRoutes,
+    menuRoutes,
+  };
 }
 
 /**

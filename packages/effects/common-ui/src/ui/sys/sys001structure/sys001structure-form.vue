@@ -35,42 +35,47 @@ const [Form, formApi] = useVbenForm(
   }),
 );
 
-const isLoading = ref(false)
+const isLoading = ref(false);
 
 async function handleSubmit() {
-  isLoading.value = true
+  isLoading.value = true;
   const { valid } = await formApi.validate();
   const values = await formApi.getValues();
-  console.log(values);
+
   if (valid) {
     emit('submit', values);
   }
-  isLoading.value = false
+  isLoading.value = false;
 }
 
 const selectNode = (node: Sys001structure) => {
   formApi.setValues({
     ...node,
-    authCode: node.authCode ?? []
+    authCode: node.authCode ?? [],
   });
 };
 
 const resetForm = async () => await formApi.reset();
 const clearValidation = async () => await formApi.clearValidation();
-const setValues = async (options: any) => await formApi.setValues(options)
+const setValues = async (options: any) => await formApi.setValues(options);
 
 defineExpose({
   getFormApi: () => formApi,
   selectNode,
   resetForm,
   clearValidation,
-  setValues
+  setValues,
 });
 </script>
 <template>
   <div @keydown.enter.prevent="handleSubmit">
     <Form />
-    <VbenButton type="submit" :loading="isLoading" class="float-right" @click="handleSubmit">
+    <VbenButton
+      type="submit"
+      :loading="isLoading"
+      class="float-right"
+      @click="handleSubmit"
+    >
       {{ $t('Save') }}
     </VbenButton>
   </div>

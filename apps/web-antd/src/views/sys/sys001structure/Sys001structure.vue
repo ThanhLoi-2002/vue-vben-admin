@@ -3,18 +3,19 @@ import type { VbenFormSchema } from '#/adapter/form.js';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Page, Sys001structureForm } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
 import { Button, Card } from 'ant-design-vue';
 
 import { useSys001structureStore } from '#/store';
-import { MenuType } from '#/typings/enum.js';
 import { layoutMap } from '#/utils/constant.js';
 import { mapOptions, preventEnter } from '#/utils/helper.js';
 
 import TreeNodeItem from './components/TreeNodeItem.vue';
+import { MenuTypeEnum } from '@vben/types';
 import type { Recordable, Sys001structure } from '@vben/types';
+import Sys001structureForm from '../../../../../../packages/effects/common-ui/src/ui/sys/sys001structure/sys001structure-form.vue';
 
 const sys001structureStore = useSys001structureStore();
 const sys001structureFormRef = ref();
@@ -27,7 +28,7 @@ const selectedId = ref<number | undefined>(undefined);
 // State bật/tắt chế độ kéo thả di chuyển node
 const isReorderMode = ref<boolean>(false);
 
-const menuTypeOptions = mapOptions(MenuType);
+const menuTypeOptions = mapOptions(MenuTypeEnum);
 const formSchema = computed((): VbenFormSchema[] => {
   return [
     {
@@ -152,7 +153,7 @@ const changeReorderMode = () => {
   if (isReorderMode.value) resetForm();
   else {
     // tắt thì lưu thứ tự
-    saveTreeOrder()
+    saveTreeOrder();
   }
 };
 
@@ -167,8 +168,8 @@ const getAllStructures = async () => {
 const resetFormFollowParent = (parent: Sys001structure) => {
   sys001structureFormRef.value.setValues({
     pid: parent.id,
-    path: (parent.path + '/?').replace('//', '/'),
-    component: (parent.component + '/?').replace('//', '/'),
+    path: `${parent.path}/?`.replace('//', '/'),
+    component: `${parent.component}/?`.replace('//', '/'),
   });
 };
 const addChild = (parent: Sys001structure) => {
@@ -190,7 +191,9 @@ const resetForm = () => {
 };
 
 const submit = async (data: Recordable<Sys001structure>) => {
-  const parent = allNodesFlat.value.find((item) => item.id === (data.pid as unknown as number));
+  const parent = allNodesFlat.value.find(
+    (item) => item.id === (data.pid as unknown as number),
+  );
   if (parent) {
     data = {
       ...data,
@@ -198,7 +201,10 @@ const submit = async (data: Recordable<Sys001structure>) => {
     };
   }
 
-  const result = await sys001structureStore.createOrUpdateNode(data, selectedId.value);
+  const result = await sys001structureStore.createOrUpdateNode(
+    data,
+    selectedId.value,
+  );
 
   if (result) {
     resetForm();
@@ -225,21 +231,24 @@ const syncFlatList = () => {
 };
 
 const saveTreeOrder = () => {
-    const updates: Array<{ id: number; pid: number; sort: number }> = [];
+  const updates: Array<{ id: number; pid: number; sort: number }> = [];
 
-    const flatTree = (nodes: Sys001structure, parentId: number) => {
-        nodes.children.forEach((node, index) => {
-            updates.push({ id: node.id, pid: parentId, sort: index });
-            if (node.children && node.children.length > 0) {
-                flatTree(node, node.id);
-            }
-        });
-    };
+  const flatTree = (nodes: Sys001structure, parentId: number) => {
+    nodes.children.forEach((node, index) => {
+      updates.push({ id: node.id, pid: parentId, sort: index });
+      if (node.children && node.children.length > 0) {
+        flatTree(node, node.id);
+      }
+    });
+  };
 
-    treeData.value[0] && flatTree(treeData.value[0], 0);
+  treeData.value[0] && flatTree(treeData.value[0], 0);
 
-    console.log("MẢNG PAYLOAD GỬI LÊN SERVER SẮP XẾP:", JSON.stringify(updates, null, 2));
-    sys001structureStore.sort(updates)
+  // console.log(
+  //   'MẢNG PAYLOAD GỬI LÊN SERVER SẮP XẾP:',
+  //   JSON.stringify(updates, null, 2),
+  // );
+  sys001structureStore.sort(updates);
 };
 
 onMounted(async () => {
@@ -249,7 +258,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Page title="TreeView Demo" description="Sử dụng Ant Design Tree trong Vben Admin">
+  <Page
+    title="TreeView Demo"
+    description="Sử dụng Ant Design Tree trong Vben Admin"
+  >
     <div class="flex flex-col lg:flex-row space-y-2">
       <div class="mr-4 w-full lg:w-3/5">
         <Card>
@@ -268,7 +280,11 @@ onMounted(async () => {
                 <template #icon>
                   <IconifyIcon icon="basil:sort-outline" class="w-5 h-5" />
                 </template>
-                {{ isReorderMode ? 'Đang bật chế độ kéo thả' : 'Bật chế độ kéo thả' }}
+                {{
+                  isReorderMode
+                    ? 'Đang bật chế độ kéo thả'
+                    : 'Bật chế độ kéo thả'
+                }}
               </Button>
             </div>
           </template>

@@ -5,8 +5,8 @@ import { IconifyIcon } from '@vben/icons';
 
 import { Button, Tag } from 'ant-design-vue';
 
-import { MenuType } from '#/typings/enum';
 import type { Sys001structure } from '@vben/types';
+import { LayoutEnum, MenuTypeEnum } from '@vben/types';
 
 // Đặt tên component để Vue nhận diện và gọi lại chính nó (Đệ quy)
 defineOptions({
@@ -20,9 +20,9 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'swap:nodes', nodes: Sys001structure[]): void;
-  (e: 'select:node', node: Sys001structure): void;
-  (e: 'addChild:node', node: Sys001structure): void;
+  'swap:nodes': [nodes: Sys001structure[]];
+  'select:node': [node: Sys001structure];
+  'addChild:node': [node: Sys001structure];
 }>();
 
 // Quản lý trạng thái mở/đóng các nhánh theo ID
@@ -61,7 +61,7 @@ const toggleNode = (node: Sys001structure) => {
 };
 
 const isExpanded = (node: Sys001structure) => {
-  return node.id !== undefined ? !!expandedMap.value[node.id] : false;
+  return node.id === undefined ? false : !!expandedMap.value[node.id];
 };
 
 // State quản lý kéo thả
@@ -69,7 +69,11 @@ const draggedNodeId = ref<number | undefined>(undefined);
 const draggedParentList = ref<Sys001structure[] | undefined>(undefined);
 
 // --- KÉO THẢ ĐỔI VỊ TRÍ CÙNG CẤP ---
-const onDragStart = (e: DragEvent, node: Sys001structure, list: Sys001structure[]) => {
+const onDragStart = (
+  e: DragEvent,
+  node: Sys001structure,
+  list: Sys001structure[],
+) => {
   if (!props.isReorderMode) return;
   draggedNodeId.value = node.id;
   draggedParentList.value = list;
@@ -87,11 +91,16 @@ const onDragOver = (e: DragEvent) => {
   }
 };
 
-const onDrop = (e: DragEvent, targetNode: Sys001structure, list: Sys001structure[]) => {
+const onDrop = (
+  e: DragEvent,
+  targetNode: Sys001structure,
+  list: Sys001structure[],
+) => {
   if (!props.isReorderMode) return;
   e.preventDefault();
 
-  if (draggedNodeId.value === undefined || draggedParentList.value !== list) return;
+  if (draggedNodeId.value === undefined || draggedParentList.value !== list)
+    return;
 
   const oldIndex = list.findIndex((n) => n.id === draggedNodeId.value);
   const newIndex = list.findIndex((n) => n.id === targetNode.id);
@@ -113,17 +122,36 @@ const onDrop = (e: DragEvent, targetNode: Sys001structure, list: Sys001structure
 };
 
 // Chuyển màu Menu Type sang Ant Design Tag color tương ứng
-const getMenuTypeColor = (menuType: string) => {
-  const type = menuType?.toUpperCase();
-  switch (type) {
-    case MenuType.MENU:
+const getMenuTypeColor = (menuType: MenuTypeEnum) => {
+  switch (menuType) {
+    case MenuTypeEnum.MENU: {
       return 'blue';
-    case MenuType.PAGE:
+    }
+    case MenuTypeEnum.PAGE: {
       return 'green';
-    case MenuType.SUB_PAGE:
+    }
+    case MenuTypeEnum.SUB_PAGE: {
       return 'purple';
-    default:
+    }
+    default: {
       return 'default';
+    }
+  }
+};
+
+const getLayoutColor = (layout: LayoutEnum) => {
+  switch (layout) {
+    // case LayoutEnum.BasicLayout:
+    //   return 'blue';
+    case LayoutEnum.EmptyLayout: {
+      return 'red';
+    }
+    case LayoutEnum.IFrameView: {
+      return 'gray';
+    }
+    default: {
+      return 'blue';
+    }
   }
 };
 </script>
@@ -189,7 +217,9 @@ const getMenuTypeColor = (menuType: string) => {
               <span
                 class="text-gray-500 bg-white dark:text-gray-400 dark:bg-gray-500/30 px-1 rounded border shadow"
                 >{{ node.name }}</span>
-              <span v-if="node.path" class="text-xs text-gray-400">{{ node.path }}</span>
+              <span v-if="node.path" class="text-xs text-gray-400">{{
+                node.path
+              }}</span>
             </div>
 
             <!-- Menu Type Badge dùng Ant Design Tag -->
@@ -203,6 +233,15 @@ const getMenuTypeColor = (menuType: string) => {
 
           <!-- action -->
           <div class="flex items-center gap-2">
+            <!-- Menu Type Badge dùng Ant Design Tag -->
+            <Tag
+              v-if="node.layout"
+              :color="getLayoutColor(node.layout)"
+              class="uppercase font-bold text-[10px] m-0"
+            >
+              {{ node.layout }}
+            </Tag>
+
             <button
               type="button"
               class="w-5 h-5 hidden group-hover:flex items-center justify-center p-0.5 rounded bg-transparent text-gray-500 hover:bg-gray-400/20 dark:text-gray-400 transition-colors"

@@ -1,18 +1,18 @@
-import type { MenuType } from "../../enum";
-import type { BaseEntity } from "../base-entity";
+import type { LayoutEnum, MenuTypeEnum } from '../../enum';
+import type { BaseEntity } from '../base-entity';
 
 interface Sys001structure extends BaseEntity {
   pid: number;
   name: string;
   icon: string;
-  order: number
+  order: number;
   description: string;
   type: number;
   authCode: string[];
   component: string;
-  layout: string
+  layout: LayoutEnum;
   path: string;
-  menuType: MenuType;
+  menuType: MenuTypeEnum;
   // meta: {
   //   order: number;
   //   title: string;
@@ -28,4 +28,4 @@ interface Sys001structure extends BaseEntity {
   children: Sys001structure[];
 }
 
-export type { Sys001structure }
+export type { Sys001structure };
